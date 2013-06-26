@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>Stock Streamer</title>
+      <script src="/socket.io/socket.io.js"></script>
+      <script>
+         var socket = io.connect('ws://localhost:8080');
+         var lastSymbol;
+         var lastQuote;
+         socket.on('connect', function() {
+            lastSymbol = 'AAPL';
+            socket.emit('subscribe-stock-quote', lastSymbol);
+         });         socket.on('disconnect', function() {
+            alert('remote server died');
+         });
+         socket.on('sequence',function(seq) {
+            var seqDiv = document.getElementById('sequence');
+            seqDiv.innerHTML = seq;
+         });
+         socket.on('receive-stock-quote',function(quote) {
+            var company = document.getElementById('company');
+            var counter = document.getElementById('counter');
+            var bid = document.getElementById('bid');
+            var ask = document.getElementById('ask');
+            var bidColor = '<font color="black">'
+            var askColor = '<font color="black">'
+            if (typeof lastQuote !== "undefined") {
+               if (quote.bid > lastQuote.bid) {
+                  bidColor = '<font color="green">'
+               } else if (quote.bid < lastQuote.bid) {
+                  bidColor = '<font color="red">'
+               }
+               if (quote.ask > lastQuote.ask) {
+                  askColor = '<font color="green">'
+               } else if (quote.ask < lastQuote.ask) {
+                  askColor = '<font color="red">'
+               }
+            }
+            company.innerHTML = quote.symbol;
+            counter.innerHTML = quote.counter;
+            bid.innerHTML = bidColor + quote.bid + '</font>';
+            ask.innerHTML = askColor + quote.ask + '</font>';
+            lastQuote = quote;
+         });
+ 
+         window.addEventListener('load',function() {
+            document.getElementById('start').addEventListener('click',
+            function() {
+               if (typeof lastSymbol !== "undefined") {
+                  socket.emit('unsubscribe-stock-quote', lastSymbol);
+               }
+               var symbol = document.getElementById('symbol').value;
+               socket.emit('subscribe-stock-quote', symbol);
+               lastSymbol = symbol;
+            }, false);
+            document.getElementById('stop').addEventListener('click',
+            function() {
+               var symbol = document.getElementById('symbol').value;
+               socket.emit('unsubscribe-stock-quote', symbol);
+            }, false);
+         }, false);
+      </script>
+   </head>
+   <body>
+      <div id="form">
+         Symbol: <input type="text" id="symbol" size="10" value="AAPL" />
+         <input type="button" id="start" value="Subscribe" />
+         <input type="button" id="stop" value="Unsubscribe" />
+      </div>
+      <table width="500">
+         <tr>
+            <th>Company</th>
+            <th>Bid</th>
+            <th>Ask</th>
+            <th>Stock Counter</th>
+         </tr>
+         <tr>
+            <td align="center"> <div id="company"></div> </td>
+            <td align="center"> <div id="bid"></div> </td>
+            <td align="center"> <div id="ask"></div> </td>
+            <td align="center"> <div id="counter"></div> </td>
+         </tr>
+      </table>
+      <p></p>
+      Quote Server Loop: <span id="sequence"/>
+   </body>
+</html>

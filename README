@@ -1,0 +1,5 @@
+Stock Steamer implemented using NodeJS, ExpressJS and SocketIO
+
+npm install
+node server.js
+open http://localhost:8080

@@ -1,0 +1,11 @@
+{
+"name": "stock_streamer",
+"version": "0.0.0",
+"description": "Stock Streamer",
+"dependencies": {
+  "socket.io": "latest",
+  "express": "latest",
+  "libxmljs": "latest"
+},
+"author": "Sheng-Loong Su"
+}
